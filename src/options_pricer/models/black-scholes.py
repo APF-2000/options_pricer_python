@@ -10,4 +10,4 @@ def european_call_option(sigma: float,T: float,t: float,S: float,K: float,r: flo
     return norm.cdf(d_1(sigma,T,t,S,K,r))*S - norm.cdf(d_2(sigma,T,t,S,K,r))*K*np.exp(-r*(T-t))
 
 def european_put_option(sigma: float,T: float,t: float,S: float,K: float,r: float):
-    return -K*norm.cdf(d_2(sigma,T,t,S,K,r))*np.exp(-r*(T-t)) - norm.cdf(d_1(sigma,T,t,S,K,r))*S
+    return K*norm.cdf(-d_2(sigma,T,t,S,K,r))*np.exp(-r*(T-t)) + norm.cdf(-d_1(sigma,T,t,S,K,r))*S
