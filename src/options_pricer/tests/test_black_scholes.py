@@ -1,7 +1,7 @@
 import math
 import pytest
 import numpy as np
-from black_scholes import european_call_option, european_put_option
+from options_pricer.models.black_scholes import european_call_option, european_put_option
 
 # Reference parameters
 S = 100.0   # Spot price
