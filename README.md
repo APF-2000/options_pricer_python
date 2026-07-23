@@ -326,11 +326,5 @@ These timings are environment-specific, but they provide a reproducible relative
 - `Rho`: sensitivity to interest rates
 - `Hedging error`: terminal value of the hedging portfolio minus option payoff
 
-## Limitations
-
-- The library focuses on vanilla options and one advanced Monte Carlo extension rather than a full derivatives ecosystem.
-- Market-data ingestion is intentionally left as an interface layer rather than a hard dependency.
-- The hedging simulator assumes geometric Brownian motion and Black-Scholes delta hedging, so it does not model jumps, stochastic volatility, or funding asymmetries.
-- Benchmark results are reproducible locally but should not be interpreted as universal runtime rankings across machines.
 
 ## AI was used to generate this readme
