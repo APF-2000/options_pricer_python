@@ -16,20 +16,21 @@ from options_pricer import (
 
 def main() -> None:
     spot = 100.0
+    strikes = tuple(range(80, 121, 5))
     rows = []
     for maturity, base_sigma in ((0.25, 0.18), (0.5, 0.20), (1.0, 0.22)):
-        for strike in (80.0, 90.0, 100.0, 110.0, 120.0):
+        for strike in strikes:
             sigma = base_sigma + 0.0008 * abs(strike - 100.0)
             option = EuropeanOption(
                 spot=spot,
-                strike=strike,
+                strike=float(strike),
                 maturity=maturity,
                 rate=0.03,
                 volatility=sigma,
             )
             rows.append(
                 {
-                    "strike": strike,
+                    "strike": float(strike),
                     "maturity": maturity,
                     "option_type": "call",
                     "price": black_scholes_price(option, "call"),
