@@ -254,7 +254,7 @@ Example output:
 The included example uses a synthetic option chain to demonstrate the implied-volatility tooling and smile/surface plotting interface without requiring internet access or a live market-data dependency.
 
 
-### 8. PyTorch surrogate model
+### 6. PyTorch surrogate model
 
 ![Surrogate model diagnostics](examples/output/surrogate_model_diagnostics.png)
 
@@ -285,7 +285,7 @@ Measured surrogate benchmark:
 - surrogate throughput: `1.20 million` contracts/sec
 - surrogate speed-up versus direct tree pricing: about `2463x`
 
-This is a much more useful machine-learning result than the earlier Black-Scholes experiment: the surrogate is approximating a materially slower numerical pricer, so the speed gain is real. The trade-off is that it introduces approximation error and is only valid over the training domain and tree specification it was fit to emulate.
+This model is used to demonstrate that we can train neural netowrks using the data of computionally expensive models and achieve similar performance for a fraction of the cost.
 
 ## Examples
 
@@ -296,10 +296,8 @@ The repository includes runnable examples for:
 3. Monte Carlo variance reduction
 4. Monte Carlo error versus path count
 5. Implied-volatility smile and surface
-6. Delta-hedging error versus rebalancing frequency
+6. PyTorch surrogate-model training and diagnostics for American CRR prices
 7. Runtime benchmarks
-8. Asian-option Monte Carlo pricing
-9. PyTorch surrogate-model training and diagnostics for American CRR prices
 
 Run them with:
 
@@ -368,15 +366,6 @@ Surrogate benchmark metrics:
 - `Vega`: sensitivity to volatility
 - `Theta`: sensitivity to the passage of time
 - `Rho`: sensitivity to interest rates
-- `Hedging error`: terminal value of the hedging portfolio minus option payoff
-
-## Limitations
-
-- The library focuses on vanilla options plus one exotic Monte Carlo extension and one machine-learning surrogate extension rather than a full derivatives platform.
-- The current surrogate model is trained on a fixed American `200`-step CRR surface; if you materially change the pricing domain or desired tree resolution, it should be retrained.
-- Market-data ingestion is intentionally left as an interface layer rather than a hard dependency.
-- The hedging simulator assumes geometric Brownian motion and Black-Scholes delta hedging, so it does not model jumps, stochastic volatility, or funding asymmetries.
-- Benchmark results are reproducible locally but should not be interpreted as universal runtime rankings across machines.
 
 
 ## AI was used to generate this readme
