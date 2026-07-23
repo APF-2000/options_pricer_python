@@ -243,28 +243,6 @@ Example output:
 
 The included example uses a synthetic option chain to demonstrate the implied-volatility tooling and smile/surface plotting interface without requiring internet access or a live market-data dependency.
 
-### 6. Delta-hedging error distribution
-
-![Delta-hedging error distribution](examples/output/delta_hedging_error_histogram.png)
-
-Example summary for the same option under different rebalancing frequencies:
-
-| Rebalance Every | Mean Error | Std. Dev. | 5% Quantile | Median | 95% Quantile |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 1 step | 0.009235 | 0.444115 | -0.706986 | 0.017535 | 0.713565 |
-| 5 steps | 0.026915 | 0.948719 | -1.429738 | 0.008589 | 1.640237 |
-| 21 steps | 0.022457 | 1.917711 | -3.301631 | 0.066579 | 3.230613 |
-
-This run shows a strong reduction in hedging-error dispersion as rebalancing becomes more frequent.
-
-### 7. Advanced extension: Asian options
-
-The arithmetic-average Asian call example produced:
-
-- price: `5.7832`
-- 95% confidence interval: `(5.6731, 5.8932)`
-
-As expected, the Asian call is cheaper than the corresponding European call because averaging reduces payoff volatility.
 
 ## Examples
 
