@@ -333,20 +333,4 @@ These timings are environment-specific, but they provide a reproducible relative
 - The hedging simulator assumes geometric Brownian motion and Black-Scholes delta hedging, so it does not model jumps, stochastic volatility, or funding asymmetries.
 - Benchmark results are reproducible locally but should not be interpreted as universal runtime rankings across machines.
 
-## Future Extensions
-
-- Barrier-option Monte Carlo or Heston-model simulation
-- Finite-difference Black-Scholes PDE pricing
-- Calibration to real option-chain data
-- Local-volatility or stochastic-volatility model comparison
-- Greeks-based risk reporting across portfolios of contracts
-
-## Why This Project Works Well In A Portfolio
-
-It demonstrates both financial intuition and engineering depth:
-
-- closed-form modeling and numerical approximation agree where they should
-- simulation-based methods report uncertainty rather than pretending to be exact
-- calibration logic is tied to no-arbitrage checks
-- hedging analysis shows how pricing assumptions connect to realised risk
-- the repository includes tests, examples, plots, benchmarks, and CI
+## AI was used to generate this readme
