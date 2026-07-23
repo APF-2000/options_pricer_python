@@ -22,11 +22,6 @@ It is designed to demonstrate:
 - Vectorised Monte Carlo pricing under geometric Brownian motion
 - Variance reduction with antithetic variates and a discounted-terminal-stock control variate
 - Robust implied-volatility inversion using Newton-Raphson with Brent fallback
-- Discrete delta-hedging simulation with transaction costs and realised/implied volatility mismatch
-
-### Advanced extension
-
-- Arithmetic-average Asian-option pricing by Monte Carlo
 
 ## Financial Assumptions
 
@@ -175,8 +170,6 @@ The test suite covers:
 - variance-reduction effectiveness
 - implied-volatility round trips
 - invalid-input handling
-- hedging error sensitivity to rebalancing frequency and transaction costs
-- Asian-option sanity checks
 
 Current automated result:
 
@@ -253,9 +246,7 @@ The repository includes runnable examples for:
 3. Monte Carlo variance reduction
 4. Monte Carlo error versus path count
 5. Implied-volatility smile and surface
-6. Delta-hedging error versus rebalancing frequency
-7. Runtime benchmarks
-8. Asian-option Monte Carlo pricing
+6. Runtime benchmarks
 
 Run them with:
 
