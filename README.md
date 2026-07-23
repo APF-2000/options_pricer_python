@@ -22,6 +22,12 @@ It is designed to demonstrate:
 - Vectorised Monte Carlo pricing under geometric Brownian motion
 - Variance reduction with antithetic variates and a discounted-terminal-stock control variate
 - Robust implied-volatility inversion using Newton-Raphson with Brent fallback
+- Discrete delta-hedging simulation with transaction costs and realised/implied volatility mismatch
+- PyTorch surrogate modelling of option-pricing surfaces, including American CRR prices
+
+### Advanced extension
+
+- Arithmetic-average Asian-option pricing by Monte Carlo
 
 ## Financial Assumptions
 
@@ -83,6 +89,12 @@ Development installation with tests, plotting, and linting:
 pip install -e ".[dev]"
 ```
 
+Optional machine-learning extra only:
+
+```bash
+pip install -e ".[ml]"
+```
+
 ## Quick Start
 
 ```python
@@ -130,6 +142,7 @@ src/
         implied_volatility.py
         hedging.py
         exotics.py
+        surrogate.py
         validation.py
         plotting.py
         contracts.py
@@ -153,6 +166,7 @@ Module responsibilities:
 - `validation.py`: finite-difference Greeks and no-arbitrage helpers
 - `plotting.py`: tables, plots, and portfolio-style reporting helpers
 - `exotics.py`: advanced extension built on the core simulation stack
+- `surrogate.py`: PyTorch dataset generation, MLP training, surrogate evaluation, and model persistence for analytical and tree-based labels
 
 ## Validation Approach
 
@@ -170,10 +184,13 @@ The test suite covers:
 - variance-reduction effectiveness
 - implied-volatility round trips
 - invalid-input handling
+- hedging error sensitivity to rebalancing frequency and transaction costs
+- Asian-option sanity checks
+- surrogate-model approximation quality on held-out synthetic contracts
 
 Current automated result:
 
-- `29` tests passing under `pytest`
+- `34` tests passing under `pytest`
 
 Run locally with:
 
@@ -237,6 +254,39 @@ Example output:
 The included example uses a synthetic option chain to demonstrate the implied-volatility tooling and smile/surface plotting interface without requiring internet access or a live market-data dependency.
 
 
+### 8. PyTorch surrogate model
+
+![Surrogate model diagnostics](examples/output/surrogate_model_diagnostics.png)
+
+The repository also includes a PyTorch multilayer perceptron trained to approximate a `200`-step Cox-Ross-Rubinstein American-option surface.
+
+What the plot shows:
+
+- left panel: training and validation MSE versus epoch
+- right panel: held-out true CRR American prices on the x-axis against surrogate predictions on the y-axis
+- dashed diagonal: perfect agreement, so tighter clustering around this line means better approximation quality
+
+Measured example run:
+
+- training epochs: `60`
+- best validation loss: `0.0014329`
+- held-out mean absolute error: `0.3221`
+- held-out RMSE: `0.4882`
+- mean absolute relative error: `6.77%`
+
+Measured surrogate benchmark:
+
+- batch size: `3,000` contracts
+- reference pricer: American CRR tree with `200` steps
+- surrogate training time: `2.9594s`
+- direct tree batch inference: `6.1389s`
+- surrogate batch inference: `0.00249s`
+- direct tree throughput: `489` contracts/sec
+- surrogate throughput: `1.20 million` contracts/sec
+- surrogate speed-up versus direct tree pricing: about `2463x`
+
+This is a much more useful machine-learning result than the earlier Black-Scholes experiment: the surrogate is approximating a materially slower numerical pricer, so the speed gain is real. The trade-off is that it introduces approximation error and is only valid over the training domain and tree specification it was fit to emulate.
+
 ## Examples
 
 The repository includes runnable examples for:
@@ -246,7 +296,10 @@ The repository includes runnable examples for:
 3. Monte Carlo variance reduction
 4. Monte Carlo error versus path count
 5. Implied-volatility smile and surface
-6. Runtime benchmarks
+6. Delta-hedging error versus rebalancing frequency
+7. Runtime benchmarks
+8. Asian-option Monte Carlo pricing
+9. PyTorch surrogate-model training and diagnostics for American CRR prices
 
 Run them with:
 
@@ -265,6 +318,12 @@ Benchmark script:
 PYTHONPATH=src ./.venv/bin/python benchmarks/benchmark_pricing.py
 ```
 
+Surrogate benchmark script:
+
+```bash
+PYTHONPATH=src ./.venv/bin/python benchmarks/benchmark_surrogate.py
+```
+
 Example runtime snapshot:
 
 | Method | Price | Runtime (s) |
@@ -276,6 +335,22 @@ Example runtime snapshot:
 | Monte Carlo + antithetic + control variate | 10.486357 | 0.095311 |
 
 These timings are environment-specific, but they provide a reproducible relative comparison between the implemented methods.
+
+Surrogate benchmark metrics:
+
+| Metric | Value |
+| --- | ---: |
+| batch_contract_count | 3000 |
+| binomial_steps | 200 |
+| training_seconds | 2.959364 |
+| tree_inference_seconds | 6.138890 |
+| surrogate_inference_seconds | 0.002493 |
+| tree_contracts_per_second | 488.687654 |
+| surrogate_contracts_per_second | 1203600.583212 |
+| surrogate_speedup_multiple | 2462.924233 |
+| surrogate_mae | 0.311737 |
+| surrogate_rmse | 0.457911 |
+| surrogate_max_abs_error | 3.604235 |
 
 ## Labels And Interpretation
 
@@ -294,6 +369,14 @@ These timings are environment-specific, but they provide a reproducible relative
 - `Theta`: sensitivity to the passage of time
 - `Rho`: sensitivity to interest rates
 - `Hedging error`: terminal value of the hedging portfolio minus option payoff
+
+## Limitations
+
+- The library focuses on vanilla options plus one exotic Monte Carlo extension and one machine-learning surrogate extension rather than a full derivatives platform.
+- The current surrogate model is trained on a fixed American `200`-step CRR surface; if you materially change the pricing domain or desired tree resolution, it should be retrained.
+- Market-data ingestion is intentionally left as an interface layer rather than a hard dependency.
+- The hedging simulator assumes geometric Brownian motion and Black-Scholes delta hedging, so it does not model jumps, stochastic volatility, or funding asymmetries.
+- Benchmark results are reproducible locally but should not be interpreted as universal runtime rankings across machines.
 
 
 ## AI was used to generate this readme

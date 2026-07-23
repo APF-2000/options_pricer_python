@@ -46,9 +46,26 @@ from .validation import (
     put_call_parity_rhs,
     validate_market_price,
 )
+try:
+    from .surrogate import (
+        AmericanBinomialSurrogate,
+        BlackScholesSurrogate,
+        SurrogateDataset,
+        SurrogateEvaluation,
+        SurrogateTrainingConfig,
+        SurrogateTrainingSummary,
+        generate_american_binomial_surrogate_dataset,
+        generate_black_scholes_surrogate_dataset,
+        generate_surrogate_dataset,
+    )
+except ModuleNotFoundError as exc:  # pragma: no cover - only triggered when torch is absent
+    if exc.name != "torch":
+        raise
 
 __all__ = [
     "AmericanOption",
+    "AmericanBinomialSurrogate",
+    "BlackScholesSurrogate",
     "BinomialResult",
     "EuropeanOption",
     "ExerciseStyle",
@@ -58,6 +75,10 @@ __all__ = [
     "OptionContract",
     "OptionGreeks",
     "OptionType",
+    "SurrogateDataset",
+    "SurrogateEvaluation",
+    "SurrogateTrainingConfig",
+    "SurrogateTrainingSummary",
     "asian_option_price",
     "binomial_convergence_table",
     "black_scholes_greeks",
@@ -76,6 +97,9 @@ __all__ = [
     "european_price_bounds",
     "european_put_option",
     "finite_difference_greeks",
+    "generate_american_binomial_surrogate_dataset",
+    "generate_black_scholes_surrogate_dataset",
+    "generate_surrogate_dataset",
     "implied_volatility",
     "implied_volatility_frame",
     "make_american_option",

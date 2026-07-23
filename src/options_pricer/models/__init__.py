@@ -19,10 +19,27 @@ from options_pricer.monte_carlo import (
     monte_carlo_price,
     simulate_gbm_paths,
 )
+from options_pricer.surrogate import (
+    AmericanBinomialSurrogate,
+    BlackScholesSurrogate,
+    SurrogateDataset,
+    SurrogateEvaluation,
+    SurrogateTrainingConfig,
+    SurrogateTrainingSummary,
+    generate_american_binomial_surrogate_dataset,
+    generate_black_scholes_surrogate_dataset,
+    generate_surrogate_dataset,
+)
 
 __all__ = [
+    "AmericanBinomialSurrogate",
+    "BlackScholesSurrogate",
     "BinomialResult",
     "MonteCarloResult",
+    "SurrogateDataset",
+    "SurrogateEvaluation",
+    "SurrogateTrainingConfig",
+    "SurrogateTrainingSummary",
     "asian_option_price",
     "binomial_convergence_table",
     "black_scholes_greeks",
@@ -35,6 +52,9 @@ __all__ = [
     "d2",
     "european_call_option",
     "european_put_option",
+    "generate_american_binomial_surrogate_dataset",
+    "generate_black_scholes_surrogate_dataset",
+    "generate_surrogate_dataset",
     "monte_carlo_convergence_table",
     "monte_carlo_price",
     "simulate_gbm_paths",
