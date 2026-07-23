@@ -32,9 +32,9 @@ It is designed to demonstrate:
 
 Unless otherwise stated, pricing uses the standard risk-neutral geometric Brownian motion model:
 
-\[
+$$
 dS_t = (r - q)S_t\,dt + \sigma S_t\,dW_t
-\]
+$$
 
 where:
 
@@ -45,27 +45,27 @@ where:
 
 For European options, the Black-Scholes prices are:
 
-\[
+$$
 C = S_0 e^{-qT} N(d_1) - K e^{-rT} N(d_2)
-\]
+$$
 
-\[
+$$
 P = K e^{-rT} N(-d_2) - S_0 e^{-qT} N(-d_1)
-\]
+$$
 
 with
 
-\[
+$$
 d_1 = \frac{\ln(S_0/K) + (r - q + \tfrac{1}{2}\sigma^2)T}{\sigma\sqrt{T}},
 \qquad
 d_2 = d_1 - \sigma\sqrt{T}
-\]
+$$
 
 Put-call parity is validated as:
 
-\[
+$$
 C - P = S_0 e^{-qT} - K e^{-rT}
-\]
+$$
 
 The repository explicitly distinguishes:
 
