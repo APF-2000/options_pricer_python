@@ -8,9 +8,7 @@ It is designed to demonstrate:
 - numerical methods and convergence analysis;
 - Monte Carlo simulation and variance reduction;
 - implied-volatility inversion;
-- discrete delta hedging;
 - quantitative testing and reproducible benchmarking;
-- clean Python package design suitable for quant-dev and quant-research interviews.
 
 ## What The Library Implements
 
@@ -22,12 +20,8 @@ It is designed to demonstrate:
 - Vectorised Monte Carlo pricing under geometric Brownian motion
 - Variance reduction with antithetic variates and a discounted-terminal-stock control variate
 - Robust implied-volatility inversion using Newton-Raphson with Brent fallback
-- Discrete delta-hedging simulation with transaction costs and realised/implied volatility mismatch
 - PyTorch surrogate modelling of option-pricing surfaces, including American CRR prices
 
-### Advanced extension
-
-- Arithmetic-average Asian-option pricing by Monte Carlo
 
 ## Financial Assumptions
 
@@ -184,7 +178,6 @@ The test suite covers:
 - variance-reduction effectiveness
 - implied-volatility round trips
 - invalid-input handling
-- hedging error sensitivity to rebalancing frequency and transaction costs
 - Asian-option sanity checks
 - surrogate-model approximation quality on held-out synthetic contracts
 
