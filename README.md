@@ -17,7 +17,7 @@ It is designed to demonstrate:
 - Black-Scholes pricing for European calls and puts
 - Analytical Greeks: delta, gamma, vega, theta, rho
 - Cox-Ross-Rubinstein binomial trees for European and American options
-- Vectorised Monte Carlo pricing under geometric Brownian motion
+- Monte Carlo pricing under geometric Brownian motion
 - Variance reduction with antithetic variates and a discounted-terminal-stock control variate
 - Robust implied-volatility inversion using Newton-Raphson with Brent fallback
 - PyTorch surrogate modelling of option-pricing surfaces, including American CRR prices
