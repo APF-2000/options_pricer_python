@@ -5,17 +5,43 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "options_pricer"
 version = "0.1.0"
-description = "A Python package for option pricing models"
+description = "A quantitative-finance library for option pricing, risk analysis, and hedging"
 authors = [{ name = "Allan player" }]
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.13",
+    "pandas>=2.2",
+]
 
 [project.optional-dependencies]
 viz = ["matplotlib>=3.8"]
-test = ["pytest>=8.0"]
+test = ["pytest>=8.3", "pytest-cov>=5.0"]
+dev = [
+    "matplotlib>=3.8",
+    "pytest>=8.3",
+    "pytest-cov>=5.0",
+    "ruff>=0.5",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"
+markers = [
+    "slow: marks tests as slow statistical or benchmark-oriented checks",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

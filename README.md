@@ -1,31 +1,91 @@
 # options_pricer_python
 
-`options_pricer_python` is a lightweight European option pricing package with:
+`options_pricer_python` is a quantitative-finance portfolio project focused on pricing, calibration, simulation, hedging, and model validation for vanilla options.
 
-- Black-Scholes closed-form pricing
-- Cox-Ross-Rubinstein binomial trees
-- Monte Carlo simulation with sample-path output
-- Text and optional chart-based visualization helpers
+It is designed to demonstrate:
 
-The package is designed to do more than return a single number. It can also show:
+- closed-form derivatives pricing;
+- numerical methods and convergence analysis;
+- Monte Carlo simulation and variance reduction;
+- implied-volatility inversion;
+- discrete delta hedging;
+- quantitative testing and reproducible benchmarking;
+- clean Python package design suitable for quant-dev and quant-research interviews.
 
-- how intrinsic value and time value change as spot moves
-- how a binomial tree propagates stock prices and option values
-- how Monte Carlo sample paths evolve before the payoff is discounted back
-- how different pricing models compare on the same contract
+## What The Library Implements
 
-## Install
+### Core models
 
-Core package:
+- Black-Scholes pricing for European calls and puts
+- Analytical Greeks: delta, gamma, vega, theta, rho
+- Cox-Ross-Rubinstein binomial trees for European and American options
+- Vectorised Monte Carlo pricing under geometric Brownian motion
+- Variance reduction with antithetic variates and a discounted-terminal-stock control variate
+- Robust implied-volatility inversion using Newton-Raphson with Brent fallback
+- Discrete delta-hedging simulation with transaction costs and realised/implied volatility mismatch
+
+### Advanced extension
+
+- Arithmetic-average Asian-option pricing by Monte Carlo
+
+## Financial Assumptions
+
+Unless otherwise stated, pricing uses the standard risk-neutral geometric Brownian motion model:
+
+\[
+dS_t = (r - q)S_t\,dt + \sigma S_t\,dW_t
+\]
+
+where:
+
+- `S_t` is the underlying spot price
+- `r` is the risk-free rate
+- `q` is the dividend yield
+- `sigma` is volatility
+
+For European options, the Black-Scholes prices are:
+
+\[
+C = S_0 e^{-qT} N(d_1) - K e^{-rT} N(d_2)
+\]
+
+\[
+P = K e^{-rT} N(-d_2) - S_0 e^{-qT} N(-d_1)
+\]
+
+with
+
+\[
+d_1 = \frac{\ln(S_0/K) + (r - q + \tfrac{1}{2}\sigma^2)T}{\sigma\sqrt{T}},
+\qquad
+d_2 = d_1 - \sigma\sqrt{T}
+\]
+
+Put-call parity is validated as:
+
+\[
+C - P = S_0 e^{-qT} - K e^{-rT}
+\]
+
+The repository explicitly distinguishes:
+
+- model price: a price implied by the pricing model under risk-neutral assumptions
+- market price: an externally observed price used for implied-volatility inversion
+- implied volatility: the volatility that reproduces a market price under the model
+- realised volatility: the volatility used to generate simulated underlying paths
+
+## Installation
+
+Core installation:
 
 ```bash
 pip install -e .
 ```
 
-Optional plotting support:
+Development installation with tests, plotting, and linting:
 
 ```bash
-pip install -e ".[viz]"
+pip install -e ".[dev]"
 ```
 
 ## Quick Start
@@ -34,193 +94,259 @@ pip install -e ".[viz]"
 from options_pricer import (
     EuropeanOption,
     black_scholes_price,
-    compare_model_prices,
+    black_scholes_greeks,
     cox_ross_rubinstein_price,
-    describe_option,
+    implied_volatility,
     monte_carlo_price,
-    render_binomial_tree,
-    render_price_table,
-    render_sample_paths,
+    simulate_delta_hedge,
 )
-from options_pricer.visualization import price_curve
 
 option = EuropeanOption(
     spot=100.0,
     strike=100.0,
     maturity=1.0,
-    current_time=0.0,
     rate=0.05,
-    volatility=0.2,
-)
-
-print(black_scholes_price(option, "call"))
-print(describe_option(option, "call"))
-
-rows = price_curve(option, "call", points=7)
-print(render_price_table(rows))
-
-tree = cox_ross_rubinstein_price(option, "call", steps=4)
-print(render_binomial_tree(tree))
-
-mc = monte_carlo_price(option, "call", simulations=2000, steps=50, seed=7)
-print(render_sample_paths(mc.sample_paths))
-
-print(compare_model_prices(option, "call"))
-```
-
-Example text output:
-
-```text
-Call option summary
-Spot=100.00 Strike=100.00 Tau=1.00 Vol=20.00%
-Price=10.4506 Intrinsic=0.0000 Time value=10.4506
-Greeks Delta=0.6368 Gamma=0.0188 Vega=37.5240 Theta=-6.4140 Rho=53.2325
-```
-
-## Available Models
-
-### 1. Black-Scholes
-
-Use when you want a fast closed-form benchmark for European options.
-
-```python
-from options_pricer import EuropeanOption, black_scholes_price
-
-option = EuropeanOption(
-    spot=100.0,
-    strike=100.0,
-    maturity=1.0,
-    current_time=0.0,
-    rate=0.05,
-    volatility=0.2,
+    volatility=0.20,
 )
 
 call_price = black_scholes_price(option, "call")
-put_price = black_scholes_price(option, "put")
+call_greeks = black_scholes_greeks(option, "call")
+tree_price = cox_ross_rubinstein_price(option, "call", steps=200).price
+mc_price = monte_carlo_price(option, "call", paths=10_000, steps=100).price
+iv = implied_volatility(option, "call", market_price=call_price)
+hedge = simulate_delta_hedge(option, "call", paths=1_000, steps=252, rebalance_every=5)
+
+print(call_price)
+print(call_greeks)
+print(tree_price, mc_price, iv)
+print(hedge.mean_error, hedge.std_error)
 ```
 
-### 2. Binomial Tree
+## Architecture
 
-Use when you want to see the pricing recursion node by node.
-
-```python
-from options_pricer import cox_ross_rubinstein_price, render_binomial_tree
-
-tree = cox_ross_rubinstein_price(option, "call", steps=5)
-print(render_binomial_tree(tree))
+```text
+src/
+    options_pricer/
+        __init__.py
+        instruments.py
+        black_scholes.py
+        binomial.py
+        monte_carlo.py
+        implied_volatility.py
+        hedging.py
+        exotics.py
+        validation.py
+        plotting.py
+        contracts.py
+        euro_options.py
+        models/                 # backward-compatible wrappers
+tests/
+examples/
+    output/
+benchmarks/
+.github/workflows/ci.yml
 ```
 
-### 3. Monte Carlo
+Module responsibilities:
 
-Use when you want simulated terminal distributions and sample paths.
+- `instruments.py`: typed option contracts and shared value objects
+- `black_scholes.py`: closed-form pricing, vectorised input support, analytical Greeks
+- `binomial.py`: efficient backward-induction CRR trees with American exercise
+- `monte_carlo.py`: GBM simulation, Monte Carlo pricing, convergence tables, variance-reduction comparison
+- `implied_volatility.py`: no-arbitrage validation and implied-volatility inversion
+- `hedging.py`: self-financing delta-hedging simulation and error summaries
+- `validation.py`: finite-difference Greeks and no-arbitrage helpers
+- `plotting.py`: tables, plots, and portfolio-style reporting helpers
+- `exotics.py`: advanced extension built on the core simulation stack
 
-```python
-from options_pricer import monte_carlo_price, render_sample_paths
+## Validation Approach
 
-mc = monte_carlo_price(option, "call", simulations=5000, steps=100, seed=7)
-print(mc.price, mc.std_error, mc.confidence_interval)
-print(render_sample_paths(mc.sample_paths))
+The project emphasizes measurable correctness rather than cosmetic output.
+
+The test suite covers:
+
+- benchmark Black-Scholes values
+- put-call parity
+- expiry and near-zero-volatility boundary behavior
+- analytical Greeks versus finite-difference approximations
+- binomial convergence to Black-Scholes
+- American-option inequalities
+- Monte Carlo confidence intervals
+- variance-reduction effectiveness
+- implied-volatility round trips
+- invalid-input handling
+- hedging error sensitivity to rebalancing frequency and transaction costs
+- Asian-option sanity checks
+
+Current automated result:
+
+- `29` tests passing under `pytest`
+
+Run locally with:
+
+```bash
+PYTHONPATH=src ./.venv/bin/pytest -q
 ```
 
-## Visualization Helpers
+## Sample Results
 
-### Price / Intrinsic / Time Value Table
+All values below are from actual local runs on July 23, 2026 using this repository.
 
-```python
-from options_pricer.visualization import price_curve
-from options_pricer import render_price_table
-
-rows = price_curve(option, "call", points=9)
-print(render_price_table(rows))
-```
-
-### Optional matplotlib charts
-
-If you install `.[viz]`, you can generate charts directly:
-
-```python
-from options_pricer import plot_price_curve
-from options_pricer.visualization import price_curve
-
-rows = price_curve(option, "call", points=21)
-figure, axis = plot_price_curve(rows, title="Call value vs spot")
-figure.savefig("call_value_vs_spot.png", dpi=150, bbox_inches="tight")
-```
-
-## Example Plots
-
-The repository now includes two example figures generated from the default at-the-money case:
-
-- spot price `S = 100`
-- strike price `K = 100`
-- maturity `T = 1 year`
-- risk-free rate `r = 5%`
-- volatility `sigma = 20%`
-
-### Pricing dashboard
+### 1. Pricing dashboard
 
 ![European option pricing dashboard](plots/option_pricing_dashboard.png)
 
-This dashboard has four panels:
+This figure decomposes option premium into intrinsic value and time value, and compares Black-Scholes, binomial, and Monte Carlo prices for an at-the-money one-year option.
 
-1. `Call Value vs Spot`
-   This shows how the call price changes as the underlying spot price moves.
-   The solid line is the full model price.
-   The dashed line is the intrinsic value.
-   The shaded region between them is the time value.
+### 2. Binomial convergence
 
-2. `Put Value vs Spot`
-   This shows the same breakdown for the put option.
-   As the spot price falls below the strike, the put gains intrinsic value.
+![Binomial convergence](examples/output/binomial_convergence.png)
 
-3. `Time Value Profile`
-   This isolates the part of the option premium that comes from time and uncertainty.
-   Time value is usually largest near the strike because that is where future price moves matter most.
+Example convergence table for a one-year at-the-money call:
 
-4. `Model Price Comparison`
-   This compares the three implemented pricing models:
-   Black-Scholes, binomial tree, and Monte Carlo.
-   In this example they are close to one another, which is a good sanity check.
+| Steps | Binomial Price | Black-Scholes | Absolute Error |
+| --- | ---: | ---: | ---: |
+| 5 | 10.805934 | 10.450584 | 0.355350 |
+| 50 | 10.410692 | 10.450584 | 0.039892 |
+| 200 | 10.440591 | 10.450584 | 0.009992 |
+| 400 | 10.445586 | 10.450584 | 0.004998 |
 
-### Monte Carlo sample paths
+This demonstrates the expected convergence of the CRR tree toward the closed-form European benchmark.
 
-![Monte Carlo sample paths](plots/monte_carlo_paths.png)
+### 3. Monte Carlo variance reduction
 
-This chart shows simulated future paths for the underlying asset used in the Monte Carlo model.
+Measured comparison for a 10,000-path call-pricing run:
 
-- Each colored line is one simulated path for the spot price over time.
-- The dashed horizontal line is the strike price.
-- The x-axis is the simulation step.
-- The y-axis is the simulated spot price.
+| Method | Price | Absolute Error | Std. Error | 95% CI Width | Runtime (s) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Standard | 10.481044 | 0.030460 | 0.147789 | 0.579332 | 0.182699 |
+| Antithetic | 10.517950 | 0.067366 | 0.148638 | 0.582661 | 0.083915 |
+| Antithetic + Control Variate | 10.496644 | 0.046060 | 0.056707 | 0.222292 | 0.052806 |
 
-This helps build intuition for what Monte Carlo is doing:
+In this run, the control-variate estimator reduced confidence-interval width from `0.579332` to `0.222292`, a reduction of about `61.6%`.
 
-- some paths finish above the strike, which tends to help a call
-- some finish below the strike, which tends to reduce or eliminate call payoff
-- the option price comes from averaging discounted payoffs across many such paths
+### 4. Monte Carlo convergence versus path count
 
-## What The Labels Mean
+![Monte Carlo convergence](examples/output/monte_carlo_convergence.png)
 
-The plots and text outputs use the standard option-pricing labels below.
+Example output:
 
-- `Spot price` or `S`: the current price of the underlying asset
-- `Strike price` or `K`: the fixed price written into the option contract
-- `Maturity` or `T`: when the option expires
-- `Current time` or `t`: the valuation time, usually `0` in examples
-- `Volatility` or `sigma`: how much the underlying is expected to move
-- `Risk-free rate` or `r`: the continuously compounded interest rate used for discounting
-- `Intrinsic value`: what the option would be worth if it expired immediately
-- `Time value`: `option price - intrinsic value`
-- `Call price`: the value of the right to buy at the strike
-- `Put price`: the value of the right to sell at the strike
-- `Delta`: how much the option price changes for a small move in spot
-- `Gamma`: how fast delta changes as spot moves
-- `Vega`: how sensitive the option price is to volatility
-- `Theta`: how much value tends to decay as time passes
-- `Rho`: how sensitive the option price is to interest rates
+| Paths | Price | Std. Error | 95% CI Width | Absolute Error |
+| --- | ---: | ---: | ---: | ---: |
+| 500 | 10.883487 | 0.263379 | 1.032447 | 0.432904 |
+| 2,500 | 10.592766 | 0.115244 | 0.451756 | 0.142182 |
+| 10,000 | 10.477077 | 0.055756 | 0.218562 | 0.026494 |
 
-## Test
+### 5. Implied-volatility smile
+
+![Implied-volatility smile](examples/output/implied_vol_smile.png)
+
+The included example uses a synthetic option chain to demonstrate the implied-volatility tooling and smile/surface plotting interface without requiring internet access or a live market-data dependency.
+
+### 6. Delta-hedging error distribution
+
+![Delta-hedging error distribution](examples/output/delta_hedging_error_histogram.png)
+
+Example summary for the same option under different rebalancing frequencies:
+
+| Rebalance Every | Mean Error | Std. Dev. | 5% Quantile | Median | 95% Quantile |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1 step | 0.009235 | 0.444115 | -0.706986 | 0.017535 | 0.713565 |
+| 5 steps | 0.026915 | 0.948719 | -1.429738 | 0.008589 | 1.640237 |
+| 21 steps | 0.022457 | 1.917711 | -3.301631 | 0.066579 | 3.230613 |
+
+This run shows a strong reduction in hedging-error dispersion as rebalancing becomes more frequent.
+
+### 7. Advanced extension: Asian options
+
+The arithmetic-average Asian call example produced:
+
+- price: `5.7832`
+- 95% confidence interval: `(5.6731, 5.8932)`
+
+As expected, the Asian call is cheaper than the corresponding European call because averaging reduces payoff volatility.
+
+## Examples
+
+The repository includes runnable examples for:
+
+1. Black-Scholes pricing and Greeks
+2. Binomial convergence
+3. Monte Carlo variance reduction
+4. Monte Carlo error versus path count
+5. Implied-volatility smile and surface
+6. Delta-hedging error versus rebalancing frequency
+7. Runtime benchmarks
+8. Asian-option Monte Carlo pricing
+
+Run them with:
 
 ```bash
-PYTHONPATH=src python3 -m unittest discover -s src/options_pricer/tests -q
+PYTHONPATH=src ./.venv/bin/python examples/02_binomial_convergence.py
+PYTHONPATH=src ./.venv/bin/python examples/06_delta_hedging.py
 ```
+
+Generated artifacts are written to `examples/output/`.
+
+## Benchmarking
+
+Benchmark script:
+
+```bash
+PYTHONPATH=src ./.venv/bin/python benchmarks/benchmark_pricing.py
+```
+
+Example runtime snapshot:
+
+| Method | Price | Runtime (s) |
+| --- | ---: | ---: |
+| Black-Scholes | 10.450584 | 0.010501 |
+| Binomial tree (500 steps) | 10.446585 | 0.024666 |
+| Monte Carlo | 10.406783 | 0.218629 |
+| Monte Carlo + antithetic | 10.504464 | 0.132079 |
+| Monte Carlo + antithetic + control variate | 10.486357 | 0.095311 |
+
+These timings are environment-specific, but they provide a reproducible relative comparison between the implemented methods.
+
+## Labels And Interpretation
+
+- `Spot` or `S`: current underlying price
+- `Strike` or `K`: contractual exercise price
+- `Maturity` or `T`: option expiry
+- `Current time` or `t`: valuation time
+- `Volatility` or `sigma`: annualized model volatility
+- `Risk-free rate` or `r`: continuously compounded discount rate
+- `Dividend yield` or `q`: continuous dividend yield
+- `Intrinsic value`: payoff if exercised immediately
+- `Time value`: option premium minus intrinsic value
+- `Delta`: first-order sensitivity to spot
+- `Gamma`: curvature with respect to spot
+- `Vega`: sensitivity to volatility
+- `Theta`: sensitivity to the passage of time
+- `Rho`: sensitivity to interest rates
+- `Hedging error`: terminal value of the hedging portfolio minus option payoff
+
+## Limitations
+
+- The library focuses on vanilla options and one advanced Monte Carlo extension rather than a full derivatives ecosystem.
+- Market-data ingestion is intentionally left as an interface layer rather than a hard dependency.
+- The hedging simulator assumes geometric Brownian motion and Black-Scholes delta hedging, so it does not model jumps, stochastic volatility, or funding asymmetries.
+- Benchmark results are reproducible locally but should not be interpreted as universal runtime rankings across machines.
+
+## Future Extensions
+
+- Barrier-option Monte Carlo or Heston-model simulation
+- Finite-difference Black-Scholes PDE pricing
+- Calibration to real option-chain data
+- Local-volatility or stochastic-volatility model comparison
+- Greeks-based risk reporting across portfolios of contracts
+
+## Why This Project Works Well In A Portfolio
+
+It demonstrates both financial intuition and engineering depth:
+
+- closed-form modeling and numerical approximation agree where they should
+- simulation-based methods report uncertainty rather than pretending to be exact
+- calibration logic is tied to no-arbitrage checks
+- hedging analysis shows how pricing assumptions connect to realised risk
+- the repository includes tests, examples, plots, benchmarks, and CI

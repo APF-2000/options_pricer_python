@@ -1,45 +1,101 @@
-"""Public package interface for options_pricer."""
+"""Public package interface for the options_pricer library."""
 
-from .contracts import EuropeanOption
-from .euro_options import make_european_option
-from .models import (
-    BinomialTreeResult,
-    MonteCarloResult,
-    OptionGreeks,
+from .binomial import BinomialResult, binomial_convergence_table, cox_ross_rubinstein_price
+from .black_scholes import (
     black_scholes_greeks,
+    black_scholes_greeks_inputs,
     black_scholes_price,
-    cox_ross_rubinstein_price,
+    black_scholes_price_inputs,
+    d1,
+    d2,
     european_call_option,
     european_put_option,
-    monte_carlo_price,
 )
-from .visualization import (
+from .exotics import asian_option_price
+from .euro_options import make_american_option, make_european_option
+from .hedging import HedgingSimulationResult, simulate_delta_hedge
+from .implied_volatility import ImpliedVolatilityError, build_volatility_surface, implied_volatility, implied_volatility_frame
+from .instruments import AmericanOption, EuropeanOption, ExerciseStyle, OptionContract, OptionGreeks, OptionType
+from .monte_carlo import (
+    MonteCarloResult,
+    compare_monte_carlo_methods,
+    monte_carlo_convergence_table,
+    monte_carlo_price,
+    simulate_gbm_paths,
+)
+from .plotting import (
     compare_model_prices,
     describe_option,
+    plot_binomial_convergence,
+    plot_hedging_error_distribution,
+    plot_monte_carlo_convergence,
     plot_price_curve,
     plot_sample_paths,
+    plot_volatility_smile,
+    plot_volatility_surface,
+    price_curve,
     render_binomial_tree,
     render_price_table,
     render_sample_paths,
 )
+from .validation import (
+    ensure_option_type,
+    european_price_bounds,
+    finite_difference_greeks,
+    put_call_parity_gap,
+    put_call_parity_rhs,
+    validate_market_price,
+)
 
 __all__ = [
-    "BinomialTreeResult",
+    "AmericanOption",
+    "BinomialResult",
     "EuropeanOption",
+    "ExerciseStyle",
+    "HedgingSimulationResult",
+    "ImpliedVolatilityError",
     "MonteCarloResult",
+    "OptionContract",
     "OptionGreeks",
+    "OptionType",
+    "asian_option_price",
+    "binomial_convergence_table",
     "black_scholes_greeks",
+    "black_scholes_greeks_inputs",
     "black_scholes_price",
+    "black_scholes_price_inputs",
+    "build_volatility_surface",
     "compare_model_prices",
+    "compare_monte_carlo_methods",
     "cox_ross_rubinstein_price",
+    "d1",
+    "d2",
     "describe_option",
+    "ensure_option_type",
     "european_call_option",
+    "european_price_bounds",
     "european_put_option",
+    "finite_difference_greeks",
+    "implied_volatility",
+    "implied_volatility_frame",
+    "make_american_option",
     "make_european_option",
+    "monte_carlo_convergence_table",
     "monte_carlo_price",
+    "plot_binomial_convergence",
+    "plot_hedging_error_distribution",
+    "plot_monte_carlo_convergence",
     "plot_price_curve",
     "plot_sample_paths",
+    "plot_volatility_smile",
+    "plot_volatility_surface",
+    "price_curve",
+    "put_call_parity_gap",
+    "put_call_parity_rhs",
     "render_binomial_tree",
     "render_price_table",
     "render_sample_paths",
+    "simulate_delta_hedge",
+    "simulate_gbm_paths",
+    "validate_market_price",
 ]
